@@ -1,95 +1,60 @@
-# Rockem-Stockem CorrelationBots
+# Rockem-Stockem Correlationbots
 
-A collection of Jupyter notebooks demonstrating two approaches for exploring feature correlations in stock return prediction: a UMAP-based dimensionality reduction pipeline and a traditional statistical analysis pipeline.
+This repository includes two Jupyter notebooks that explore different approaches to analyzing and modeling stock returns using Kaggle datasets: a UMAP-based dimensionality reduction approach and a traditional statistical approach.
 
-## Overview
+## Notebooks
 
-This repository contains two complementary notebooks:
+* **UMAPApproach.ipynb**: Applies UMAP for dimensionality reduction on numeric features before modeling.
+* **statisticsApproach.ipynb**: Uses standard statistical methods for feature exploration and baseline modeling.
 
-* **UMAP Approach** (`Copy_of_Rockem_Stockem_Correlationbots_UMAPApproach.ipynb`): Applies Uniform Manifold Approximation and Projection (UMAP) to reduce high-dimensional feature spaces into a lower-dimensional embedding. The notebook then investigates correlations between these UMAP features and target returns, helping identify latent structures and the most predictive embeddings.
+## Goals
 
-* **Statistical Approach** (`Rockem_Stockem_Correlationbots_statisticsApproach.ipynb`): Uses classical statistical methods (e.g., Spearman, Pearson correlations; heatmaps; hypothesis testing) to quantify relationships between original features and returns. It generates correlation matrices, visualizations, and significance tests to highlight the strongest predictors.
+* Compare the effectiveness of dimensionality reduction (UMAP) versus traditional statistical analysis in capturing predictive signals for stock returns.
+* Evaluate model performance and feature correlations on the 2024 Kaggle dataset and assess generalization to the 2025 public dataset.
 
-## Prerequisites
-
-Ensure you have the following installed:
-
-* Python 3.8 or higher
-* Jupyter Notebook or JupyterLab
-* Required Python libraries:
-
-  * pandas
-  * numpy
-  * matplotlib
-  * seaborn
-  * umap-learn
-  * scikit-learn
-  * scipy
-  * plotly (optional for interactive plots)
-
-You can install dependencies via:
-
-```bash
-pip install pandas numpy matplotlib seaborn umap-learn scikit-learn scipy plotly
-```
-
-## Repository Structure
-
-```text
-├── Copy_of_Rockem_Stockem_Correlationbots_UMAPApproach.ipynb
-├── Rockem_Stockem_Correlationbots_statisticsApproach.ipynb
-└── README.md
-```
-
-## Usage
-
-1. **Clone the repository**:
-
-   ```bash
-   ```
-
-git clone <your-repo-url>
-cd <your-repo-folder>
-
-````
-2. **Launch Jupyter**:
-   ```bash
-jupyter notebook
-````
-
-or
-
-```bash
-jupyter lab
-```
-
-3. **Open and run** the desired notebook:
-
-   * For UMAP-based analysis: `Copy_of_Rockem_Stockem_Correlationbots_UMAPApproach.ipynb`
-   * For statistical analysis: `Rockem_Stockem_Correlationbots_statisticsApproach.ipynb`
-
-## Notebook Descriptions
+## Methods
 
 ### UMAP Approach
 
-1. **Data Loading & Preprocessing**: Reads raw feature matrix and target returns.
-2. **Dimensionality Reduction**: Applies UMAP to project features into a lower-dimensional space.
-3. **Correlation Analysis**: Computes correlation coefficients between UMAP embeddings and returns.
-4. **Feature Interpretation**: Identifies top UMAP components most predictive of returns.
-5. **Visualization**: Plots embeddings and correlation bars for quick insight.
+1. Download the Kaggle 2024 and 2025 datasets using `gdown`.
+2. Load the data and separate numeric features from the `RETURN` target.
+3. Scale features with `StandardScaler`.
+4. Apply UMAP (`n_components=28`, `n_neighbors=15`, `min_dist=0.1`) to reduce feature dimensionality.
+5. Train an XGBoost regressor on the 2024 training set (`80/20` split) and compute Information Coefficient (IC) on the test set.
+6. Predict on the 2025 public dataset and compute IC.
+7. Compute and save a Spearman correlation matrix of original features.
 
 ### Statistical Approach
 
-1. **Data Loading & Cleaning**: Loads the dataset and handles missing values.
-2. **Correlation Computation**: Calculates Spearman and Pearson correlation matrices.
-3. **Heatmaps**: Visualizes correlation strengths across all features.
-4. **Significance Testing**: Performs p-value calculations to assess statistical significance.
-5. **Export**: Saves correlation matrices to Excel for further review.
+1. Download the Kaggle 2024 and 2025 datasets (same as above).
+2. Load data and isolate numeric features and the `RETURN` target.
+3. Compute a Spearman correlation matrix and visualize it as a heatmap.
+4. Train an XGBoost regressor with default hyperparameters or with `GridSearchCV` on the 2024 training set.
+5. Evaluate model performance with Mean Squared Error (MSE) and R-squared on the 2025 dataset.
+6. Compute IC for both 2024 test set and 2025 public dataset.
 
-## Contributing
+## Results
 
-Contributions are welcome! Feel free to open issues or submit pull requests to improve analysis methods or add new features.
+| Approach        | 2024 IC | 2025 IC  | 2025 MSE | 2025 R²  |
+| --------------- | ------- | -------- | -------- | -------- |
+| **UMAP**        | 0.20807 | -0.11982 | N/A      | N/A      |
+| **Statistical** | 0.13093 | 0.15001  | 0.001029 | 0.021503 |
 
-## License
+* The UMAP-based model shows moderate IC on the 2024 test set but fails to generalize to the 2025 data (negative IC).
+* The standard statistical model yields lower 2024 IC but a positive generalization signal on 2025, with modest R².
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+## Potential Limitations
+
+* **Dataset Size**: The dataset (\~1,000 samples) is small for high-dimensional modeling. Removing outliers can significantly impact results.
+* **Model Complexity**: Hyperparameter tuning and model selection may be limited due to computational constraints.
+* **Evaluation Metrics**: IC and R² provide only partial insight; additional metrics (e.g., MAE, Sharpe ratio) may offer further understanding.
+
+## Conclusions & Next Steps
+
+* Traditional statistical modeling provided more stable generalization compared to the UMAP approach in this project.
+* Future work could include:
+
+  * Hyperparameter optimization for both approaches.
+  * Ensembling multiple models.
+  * Incorporating time-series cross-validation.
+  * Testing different dimensionality reduction techniques (PCA, t-SNE).
